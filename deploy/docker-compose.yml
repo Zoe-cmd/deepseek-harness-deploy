@@ -1,0 +1,43 @@
+# =============================================================
+# DSH auth gateway + nginx — Docker Compose.
+#
+# IMPORTANT: DeepSeek Harness itself runs NATIVELY on the host and
+# binds ONLY 127.0.0.1:3080 (the repo ships no Dockerfile; the harness
+# spawns local processes/sandboxes that a container cannot meaningfully
+# host). The auth gateway and nginx are the public-facing, isolation-
+# worthy parts, so they run in containers using `network_mode: host`
+# to share the host loopback:
+#
+#   Browser -> nginx(:80/:443, host) -> auth(127.0.0.1:3081, host) -> harness(127.0.0.1:3080, host)
+#
+# Preconditions on the host:
+#   - harness running on 127.0.0.1:3080  (see deploy/scripts/start.sh)
+#   - deploy/.env present                (HARNESS_ACCESS_TOKEN, SESSION_SECRET, ...)
+#   - deploy/certs/harness.crt|key exist (deploy/nginx/gen-cert.sh)
+#   - the host ports 80/443 are free      (stop the system nginx if it owns them)
+#
+# Usage:
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#   docker compose -f deploy/docker-compose.yml logs -f
+#   docker compose -f deploy/docker-compose.yml down
+# =============================================================
+
+services:
+  auth:
+    build: ./auth-gateway
+    container_name: dsh-auth
+    network_mode: host
+    env_file: ./.env
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: dsh-nginx
+    network_mode: host
+    volumes:
+      - ./nginx/nginx-gateway-docker.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ./logs:/var/log/nginx
+    depends_on:
+      - auth
+    restart: unless-stopped

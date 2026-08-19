@@ -1,0 +1,14 @@
+{
+  "name": "dsh-auth-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent token-authentication gateway in front of DeepSeek Harness (session + rate limit + reverse proxy). Zero runtime dependencies.",
+  "type": "module",
+  "main": "server.mjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

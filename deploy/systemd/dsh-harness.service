@@ -1,0 +1,17 @@
+[Unit]
+Description=DeepSeek Harness web server (loopback only)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/test/test
+ExecStart=/usr/bin/env node /root/test/test/node_modules/@deepseek-ai/dsh/lib/bin.js web
+Restart=on-failure
+RestartSec=3
+
+# Isolate: no public network listeners.
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

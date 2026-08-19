@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+deploy/.env
+deploy/.token
+deploy/certs/
+
+# Upstream harness clone (used for analysis; upstream code lives on GitHub)
+deepseek-harness/
+
+# Runtime artifacts
+node_modules/
+deploy/logs/
+deploy/run/
+*.log
+*.pid
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
