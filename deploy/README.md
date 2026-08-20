@@ -19,7 +19,7 @@ deploy/
 ├── nginx/
 │   ├── nginx-gateway.conf         生产站点（安装到系统 nginx）
 │   ├── nginx-gateway-docker.conf  Docker Compose 用独立 nginx
-│   └── gen-cert.sh                自签名证书生成
+│   └── gen-cert.sh                自签名证书生成（支持 PUBLIC_IP SAN）
 ├── scripts/
 │   ├── start.sh | stop.sh | restart.sh | status.sh | logs.sh
 │   └── security-test.sh           31 项功能+安全测试矩阵

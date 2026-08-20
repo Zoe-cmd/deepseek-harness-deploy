@@ -1,4 +1,4 @@
-# Secrets — never commit (matched at any depth, so deepseek/deploy/... is covered)
+# Secrets — never commit (matched at any depth)
 .env
 **/.env
 **/.token
@@ -6,11 +6,9 @@
 
 # Upstream harness clone (used for analysis; upstream code lives on GitHub)
 deepseek-harness/
-**/deepseek-harness/
 
 # Runtime artifacts
 node_modules/
-**/node_modules/
 deploy/logs/
 **/deploy/logs/
 deploy/run/
