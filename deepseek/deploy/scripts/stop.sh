@@ -25,7 +25,7 @@ stop_pid() {
 
 # Test nginx (dedicated instance).
 if [[ -f "$RUN/nginx-test.pid" ]]; then
-  nginx -s stop -c "$ROOT/deploy/nginx/nginx-gateway-test.conf" 2>/dev/null \
+  nginx -p "$ROOT/deploy" -s stop -c "$ROOT/deploy/nginx/nginx-gateway-test.conf" 2>/dev/null \
     && echo "nginx-test: stopped" || echo "nginx-test: not running"
   rm -f "$RUN/nginx-test.pid"
 fi

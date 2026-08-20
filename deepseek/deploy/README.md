@@ -79,6 +79,30 @@ docker compose -f deploy/docker-compose.yml up -d --build
 - 登录失败按 IP 限流（默认 10 次/15 分钟，超限封禁 15 分钟）。
 - 日志不记录令牌、会话密钥或会话 ID。
 
+## 上线后的关键修复（v2）
+
+以下修复已在当前线上实例验证：
+
+1. **CSRF 校验按 hostname 比较（server.mjs `originAllowed`）**：浏览器在地址栏带
+   `:443` 时 `Origin` 含端口，而 nginx `proxy_set_header Host $host` 剥掉端口。
+   改为只比较 hostname，登录不再误报 `forbidden`。
+2. **`Origin: null` 回退 Referer 校验**：隐私模式 / 严格 referrer-policy 下的表单
+   提交会发 `Origin: null`；此时回退校验 `Referer` hostname 同源才放行。登录页
+   `referrer-policy` 相应改为 `strict-origin-when-cross-origin`。
+3. **上游 `Host` 强制重写（proxy.mjs `upstreamHeaders`）**：客户端传入的 `Host`
+   头不再覆盖重写后的 `127.0.0.1:3080`，否则 Harness 的 loopback 信任围栏会拒绝
+   特权 API（登录成功但 `session.list` 等返回 403 `forbidden`）。
+4. **代理页 CSP 增加 `'unsafe-eval'`**：Harness 前端 bundle 依赖 `new Function`，
+   缺失会导致登录后白屏。登录页仍为严格 CSP（`script-src 'self'`）。
+5. **测试 nginx 配置改为相对路径**（配合 `nginx -p deploy -c ...`），不再硬编码
+   旧部署目录 `/root/test/test`。
+
+## 已修复的已知问题
+
+- 登录提交 403 `forbidden` → CSRF 端口/hostname 误判（#1/#2）。
+- 登录成功但页面白屏 → CSP 拦截 `new Function`（#4）。
+- 登录成功但 API 403 → 上游 `Host` 被客户端覆盖（#3）。
+
 ## 测试结果
 
 31 项功能+安全测试全部 PASS：未认证重定向/401、正确/错误/篡改/删除 Cookie、登录后全路由（含特权 API）、WS 升级 101 vs 401、暴力破解 429、安全响应头、登录页严格 CSP、SSE 透传、回环绑定与公网端口拒绝。

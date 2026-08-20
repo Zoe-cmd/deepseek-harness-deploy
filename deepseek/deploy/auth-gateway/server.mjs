@@ -83,14 +83,41 @@ function readBody(req, limitBytes) {
 function originAllowed(req, config) {
   const origin = req.headers.origin
   if (origin === undefined) return true // non-browser client (curl etc.)
-  if (origin === 'null') return false
   const host = req.headers.host
   if (typeof host !== 'string' || host === '') return false
+  const hostname = hostnameOf(host)
+  if (hostname === '') return false
+  // Browsers in strict-privacy mode (and pages served with
+  // `referrer-policy: no-referrer`) send `Origin: null` on form POSTs while
+  // still sending a same-origin Referer. Fall back to the Referer hostname so
+  // legitimate logins work; cross-site attackers cannot forge a matching one.
+  if (origin === 'null') {
+    const referer = req.headers.referer
+    if (typeof referer !== 'string' || referer === '') return false
+    try {
+      return hostnameOf(new URL(referer).hostname) === hostname
+    } catch {
+      return false
+    }
+  }
   try {
-    return new URL(origin).host === host
+    const originUrl = new URL(origin)
+    // Compare hostnames only (not ports). nginx forwards `Host: $host` which
+    // strips the port, while browsers may keep `:443` in the Origin when the
+    // URL was typed with an explicit port — both represent the same origin.
+    return hostnameOf(originUrl.hostname) === hostname
   } catch {
     return false
   }
+}
+
+/** Strip a leading `www.`-style prefix? No: strip IPv6 brackets/port from a hostname. */
+function hostnameOf(value) {
+  if (value.startsWith('[')) {
+    const end = value.indexOf(']')
+    return end > 0 ? value.slice(0, end + 1) : ''
+  }
+  return value.split(':')[0]
 }
 
 /** Build a Set-Cookie header value for the session id. */
@@ -182,7 +209,7 @@ export function createGateway(config) {
         'cache-control': 'no-store',
         'x-content-type-options': 'nosniff',
         'x-frame-options': 'DENY',
-        'referrer-policy': 'no-referrer',
+        'referrer-policy': 'strict-origin-when-cross-origin',
         'cross-origin-opener-policy': 'same-origin',
         'content-security-policy': LOGIN_CSP,
       })
@@ -193,7 +220,11 @@ export function createGateway(config) {
     // --- login submission -----------------------------------------------------
     if (pathname === '/login' && req.method === 'POST') {
       if (!originAllowed(req, config)) {
-        log('LOGIN_CSRF_REJECTED', { ip: clientIp(req, config.trustProxy) })
+        log('LOGIN_CSRF_REJECTED', {
+          ip: clientIp(req, config.trustProxy),
+          origin: String(req.headers.origin ?? '(none)'),
+          host: String(req.headers.host ?? '(none)'),
+        })
         res.writeHead(403, securityHeaders({ 'content-type': 'application/json' }))
         res.end(JSON.stringify({ error: 'forbidden' }))
         return

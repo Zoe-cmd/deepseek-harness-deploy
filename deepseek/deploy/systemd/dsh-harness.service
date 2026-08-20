@@ -4,8 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/root/test/test
-ExecStart=/usr/bin/env node /root/test/test/node_modules/@deepseek-ai/dsh/lib/bin.js web
+# Adjust to your checkout location.
+WorkingDirectory=/root/app/deepseek
+ExecStart=/usr/bin/env node /root/app/deepseek/node_modules/@deepseek-ai/dsh/lib/bin.js web
 Restart=on-failure
 RestartSec=3
 

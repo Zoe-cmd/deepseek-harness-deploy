@@ -29,7 +29,8 @@ check() { # name got want
 
 if [[ -z "$TOKEN" ]]; then
   echo "HARNESS_ACCESS_TOKEN not set — loading from deploy/.env"
-  TOKEN=$(grep HARNESS_ACCESS_TOKEN /root/test/test/deploy/.env | cut -d= -f2)
+  ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  TOKEN=$(grep HARNESS_ACCESS_TOKEN "$ROOT/deploy/.env" | cut -d= -f2)
 fi
 
 echo "== 1. Unauthenticated homepage =="

@@ -80,7 +80,7 @@ case "$MODE" in
       echo "nginx-test: already running (pid $(cat "$NGINX_PID"))"
     else
       echo "nginx-test: starting (http :8080, https :8443)..."
-      nginx -c "$ROOT/deploy/nginx/nginx-gateway-test.conf" || { echo "nginx-test: FAILED" >&2; exit 1; }
+      nginx -p "$ROOT/deploy" -c "$ROOT/deploy/nginx/nginx-gateway-test.conf" || { echo "nginx-test: FAILED" >&2; exit 1; }
       echo "nginx-test: started (pid $(cat "$NGINX_PID"))"
     fi
     ;;

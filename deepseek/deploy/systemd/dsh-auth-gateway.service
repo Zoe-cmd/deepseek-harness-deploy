@@ -1,0 +1,20 @@
+[Unit]
+Description=DSH auth gateway (session cookie + rate limit + reverse proxy)
+After=network.target
+Wants=dsh-harness.service
+
+[Service]
+Type=simple
+# Adjust to your checkout location; the gateway resolves the rest via the
+# HARNESS_HOST/PORT and AUTH_HOST/PORT variables in the EnvironmentFile.
+WorkingDirectory=/root/app/deepseek
+EnvironmentFile=/root/app/deepseek/deploy/.env
+ExecStart=/usr/bin/env node /root/app/deepseek/deploy/auth-gateway/server.mjs
+Restart=on-failure
+RestartSec=3
+
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

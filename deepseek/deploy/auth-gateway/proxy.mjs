@@ -51,6 +51,7 @@ export function upstreamHeaders(req, upstreamAuthority) {
   for (const [name, value] of Object.entries(req.headers)) {
     if (value === undefined) continue
     const lower = name.toLowerCase()
+    if (lower === 'host') continue // rewritten above; a client-supplied Host must never reach the harness
     if (HOP_BY_HOP.has(lower) || STRIP.has(lower)) continue
     out[lower] = join(value)
   }
@@ -66,7 +67,7 @@ export function securityHeaders(headers = {}) {
     'cross-origin-opener-policy': 'same-origin',
     'content-security-policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
