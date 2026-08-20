@@ -14,7 +14,7 @@ if [[ -f "$CERT_FILE" && -f "$KEY_FILE" ]]; then
   exit 0
 fi
 
-# Optional public IP(s) to include in the SAN, comma-separated, e.g. "<公网IP>"
+# Optional public IP(s) to include in the SAN, comma-separated, e.g. "1.2.3.4"
 PUBLIC_IP="${PUBLIC_IP:-}"
 
 SAN="DNS:${SERVER_NAME:-dsh.local},DNS:localhost,IP:127.0.0.1"

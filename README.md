@@ -121,7 +121,7 @@ bash deploy/scripts/stop.sh             # 停止整栈
 
 3. **部署 nginx 站点**（同上“快速开始”第 2 步）。
 
-当前线上实例：`https://<公网IP>`（证书 SAN 含公网 IP）。
+证书 SAN 含公网 IP 后，浏览器访问 `https://<你的公网IP>` 即不再告警。
 
 ## 配置说明（deploy/.env）
 
